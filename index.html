@@ -51,7 +51,10 @@
     const ws = new WebSocket('wss://api.hyperliquid.xyz/ws');
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ method: "subscribe", topic: "trades", symbols: ["*"], id: 1 }));
+      ws.send(JSON.stringify({
+        method: "subscribe",
+        subscription: { type: "trades", coin: "*" }
+      }));
     };
 
     ws.onmessage = (msg) => {
