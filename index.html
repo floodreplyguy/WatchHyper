@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whale Watcher Lite</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #0f0;
+      font-family: monospace;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #0f0;
+      text-align: center;
+    }
+    .buy { color: lime; }
+    .sell { color: red; }
+  </style>
+</head>
+<body>
+  <h1>🐋 Whale Watcher Lite</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Token</th>
+        <th>Side</th>
+        <th>Size</th>
+        <th>Price</th>
+      </tr>
+    </thead>
+    <tbody id="whaleTable"></tbody>
+  </table>
+
+  <audio id="bling1" src="https://assets.mixkit.co/sfx/download/mixkit-bell-notification-933.wav"></audio>
+  <audio id="bling2" src="https://assets.mixkit.co/sfx/download/mixkit-clear-announce-tones-2861.wav"></audio>
+  <audio id="bling3" src="https://assets.mixkit.co/sfx/download/mixkit-positive-notification-951.wav"></audio>
+
+  <script>
+    const ws = new WebSocket('wss://api.hyperliquid.xyz/ws');
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ method: "subscribe", topic: "trades", symbols: ["*"], id: 1 }));
+    };
+
+    ws.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+      if (!data || !data.data || !Array.isArray(data.data)) return;
+
+      data.data.forEach(trade => {
+        const notional = trade.p * trade.q;
+        if (notional < 100000) return; // Only show >$100k trades
+
+        const table = document.getElementById("whaleTable");
+        const row = document.createElement("tr");
+        row.className = trade.s === "buy" ? "buy" : "sell";
+
+        const time = new Date().toLocaleTimeString();
+        row.innerHTML = `
+          <td>${time}</td>
+          <td>${trade.coin}</td>
+          <td>${trade.s.toUpperCase()}</td>
+          <td>${parseFloat(trade.q).toFixed(2)}</td>
+          <td>$${parseFloat(trade.p).toFixed(2)}</td>
+        `;
+        table.prepend(row);
+
+        // Limit table to 50 rows
+        while (table.children.length > 50) table.removeChild(table.lastChild);
+
+        // Play sound based on notional
+        if (notional >= 1000000) {
+          document.getElementById("bling3").play();
+        } else if (notional >= 500000) {
+          document.getElementById("bling2").play();
+        } else {
+          document.getElementById("bling1").play();
+        }
+      });
+    };
+  </script>
+</body>
+</html>
