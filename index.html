@@ -55,26 +55,28 @@
     };
 
     ws.onmessage = (msg) => {
-      const response = JSON.parse(msg.data);
-      if (!response || !response.data || !Array.isArray(response.data)) return;
+      const res = JSON.parse(msg.data);
+      if (!res || res.channel !== "trades" || !res.data || !res.data.trades) return;
 
-      response.data.forEach(trade => {
-        const symbol = trade.symbol;
-        const side = trade.side;
-        const price = parseFloat(trade.price);
-        const size = parseFloat(trade.size);
+      const coin = res.data.coin;
+      const trades = res.data.trades;
+
+      trades.forEach(trade => {
+        const price = parseFloat(trade.px);
+        const size = parseFloat(trade.sz);
+        const side = trade.side === "A" ? "buy" : "sell";
         const notional = price * size;
 
-        if (notional < 100000) return; // Filter only whale trades
+        if (notional < 100000) return;
 
         const table = document.getElementById("whaleTable");
         const row = document.createElement("tr");
-        row.className = side === "buy" ? "buy" : "sell";
+        row.className = side;
 
         const time = new Date().toLocaleTimeString();
         row.innerHTML = `
           <td>${time}</td>
-          <td>${symbol}</td>
+          <td>${coin}</td>
           <td>${side.toUpperCase()}</td>
           <td>${size.toFixed(2)}</td>
           <td>$${price.toFixed(2)}</td>
