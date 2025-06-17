@@ -67,7 +67,7 @@
         const side = trade.side === "A" ? "buy" : "sell";
         const notional = price * size;
 
-        if (notional < 100000) return;
+        if (notional < 10) return;
 
         const table = document.getElementById("whaleTable");
         const row = document.createElement("tr");
