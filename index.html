@@ -55,24 +55,29 @@
     };
 
     ws.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-      if (!data || !data.data || !Array.isArray(data.data)) return;
+      const response = JSON.parse(msg.data);
+      if (!response || !response.data || !Array.isArray(response.data)) return;
 
-      data.data.forEach(trade => {
-        const notional = trade.p * trade.q;
-        if (notional < 100000) return;
+      response.data.forEach(trade => {
+        const symbol = trade.symbol;
+        const side = trade.side;
+        const price = parseFloat(trade.price);
+        const size = parseFloat(trade.size);
+        const notional = price * size;
+
+        if (notional < 100000) return; // Filter only whale trades
 
         const table = document.getElementById("whaleTable");
         const row = document.createElement("tr");
-        row.className = trade.s === "buy" ? "buy" : "sell";
+        row.className = side === "buy" ? "buy" : "sell";
 
         const time = new Date().toLocaleTimeString();
         row.innerHTML = `
           <td>${time}</td>
-          <td>${trade.coin}</td>
-          <td>${trade.s.toUpperCase()}</td>
-          <td>${parseFloat(trade.q).toFixed(2)}</td>
-          <td>$${parseFloat(trade.p).toFixed(2)}</td>
+          <td>${symbol}</td>
+          <td>${side.toUpperCase()}</td>
+          <td>${size.toFixed(2)}</td>
+          <td>$${price.toFixed(2)}</td>
         `;
         table.prepend(row);
 
