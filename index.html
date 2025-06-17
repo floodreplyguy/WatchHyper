@@ -60,7 +60,7 @@
 
       data.data.forEach(trade => {
         const notional = trade.p * trade.q;
-        if (notional < 100000) return; // Only show >$100k trades
+        if (notional < 100000) return;
 
         const table = document.getElementById("whaleTable");
         const row = document.createElement("tr");
@@ -76,10 +76,8 @@
         `;
         table.prepend(row);
 
-        // Limit table to 50 rows
         while (table.children.length > 50) table.removeChild(table.lastChild);
 
-        // Play sound based on notional
         if (notional >= 1000000) {
           document.getElementById("bling3").play();
         } else if (notional >= 500000) {
